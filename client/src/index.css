@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    
+    --primary: 246 83% 59%; /* indigo */
+    --primary-foreground: 210 40% 98%;
+    
+    --primary-dark: 245 81% 50%; /* indigo-dark */
+    --primary-light: 239 84% 74%; /* indigo-light */
+    
+    --secondary: 24 95% 53%; /* orange */
+    --secondary-foreground: 210 40% 98%;
+    
+    --secondary-dark: 22 91% 48%; /* orange-dark */
+    --secondary-light: 28 97% 61%; /* orange-light */
+    
+    --accent: 187 86% 43%; /* cyan */
+    --accent-foreground: 210 40% 98%;
+    
+    --accent-dark: 191 91% 37%; /* cyan-dark */
+    --accent-light: 186 95% 54%; /* cyan-light */
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 246 83% 59%;
+    
+    --radius: 0.5rem;
+
+    --success: 142 76% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    
+    /* Chart colors */
+    --chart-1: 246 83% 59%;
+    --chart-2: 24 95% 53%;
+    --chart-3: 187 86% 43%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 142 76% 45%;
+    
+    /* Sidebar colors */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 246 83% 59%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 246 83% 59%;
+  }
+ 
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    
+    --primary: 246 83% 59%;
+    --primary-foreground: 210 40% 98%;
+    
+    --primary-dark: 245 81% 50%;
+    --primary-light: 239 84% 74%;
+    
+    --secondary: 24 95% 53%;
+    --secondary-foreground: 210 40% 98%;
+    
+    --secondary-dark: 22 91% 48%;
+    --secondary-light: 28 97% 61%;
+    
+    --accent: 187 86% 43%;
+    --accent-foreground: 210 40% 98%;
+    
+    --accent-dark: 191 91% 37%;
+    --accent-light: 186 95% 54%;
+    
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 246 83% 59%;
+
+    --success: 142 76% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    
+    /* Chart colors */
+    --chart-1: 246 83% 59%;
+    --chart-2: 24 95% 53%;
+    --chart-3: 187 86% 43%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 142 76% 45%;
+    
+    /* Sidebar colors */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 246 83% 59%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 246 83% 59%;
+  }
+  
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  /* Product card hover effect */
+  .product-card {
+    transition: all 0.3s ease;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 2px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground) / 0.8);
+  }
+}
