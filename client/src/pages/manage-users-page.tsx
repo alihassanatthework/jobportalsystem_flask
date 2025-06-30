@@ -44,9 +44,9 @@ export default function ManageUsersPage() {
 
   // Fetch all users
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ["/api/admin/users"],
+    queryKey: ["/admin/users"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/users");
+      const response = await apiRequest("GET", "/admin/users");
       return response.json();
     },
     enabled: !!user && user.userType === "admin",
@@ -63,7 +63,7 @@ export default function ManageUsersPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/admin/users"] });
       toast({
         title: "User status updated",
         description: "The user's status has been successfully updated.",

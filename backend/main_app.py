@@ -49,7 +49,8 @@ def create_app(config_name='development'):
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
          supports_credentials=False,
-         expose_headers=["Content-Type", "Authorization"])
+         expose_headers=["Content-Type", "Authorization"],
+         max_age=3600)
     
     socketio.init_app(app, cors_allowed_origins="*")
     
@@ -89,6 +90,16 @@ def create_app(config_name='development'):
     @jwt.unauthorized_loader
     def missing_token_callback(error):
         return {'message': 'Token is missing'}, 401
+    
+    # Add OPTIONS handler for all routes
+    @app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+    @app.route('/<path:path>', methods=['OPTIONS'])
+    def handle_options(path):
+        response = app.make_default_options_response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        return response
     
     return app
 

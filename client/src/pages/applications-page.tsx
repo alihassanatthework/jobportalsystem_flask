@@ -20,34 +20,35 @@ import {
   Clock,
   Eye,
 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ApplicationsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("all");
 
-  // Fetch applications for job seeker
-  const {
-    data: jobSeekerApplications,
-    isLoading: loadingJobSeekerApplications,
-    isError: errorJobSeekerApplications,
-  } = useQuery<Application[]>({
-    queryKey: ["/api/applications/job-seeker"],
-    enabled: !!user && user.userType === "job_seeker",
+  // Fetch job seeker applications
+  const { data: jobSeekerApplications, isLoading: isLoadingJobSeekerApplications } = useQuery({
+    queryKey: ["/applications"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/applications");
+      return response.json();
+    },
+    enabled: !!user && user.role === 'job_seeker',
   });
 
-  // Fetch applications for employer
-  const {
-    data: employerApplications,
-    isLoading: loadingEmployerApplications,
-    isError: errorEmployerApplications,
-  } = useQuery<Application[]>({
-    queryKey: ["/api/applications/employer"],
-    enabled: !!user && user.userType === "employer",
+  // Fetch employer applications
+  const { data: employerApplications, isLoading: isLoadingEmployerApplications } = useQuery({
+    queryKey: ["/applications"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/applications");
+      return response.json();
+    },
+    enabled: !!user && user.role === 'employer',
   });
 
-  const isLoading = loadingJobSeekerApplications || loadingEmployerApplications;
-  const isError = errorJobSeekerApplications || errorEmployerApplications;
-  const applications = user?.userType === "job_seeker" ? jobSeekerApplications : employerApplications;
+  const isLoading = isLoadingJobSeekerApplications || isLoadingEmployerApplications;
+  const isError = false; // Assuming no error handling for the new query functions
+  const applications = user?.role === "job_seeker" ? jobSeekerApplications : employerApplications;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -67,7 +68,7 @@ export default function ApplicationsPage() {
       case "interviewing":
         return "default";
       case "offered":
-        return "success";
+        return "default";
       case "rejected":
         return "destructive";
       default:
@@ -101,13 +102,13 @@ export default function ApplicationsPage() {
     );
   }
 
-  const isJobSeeker = user.userType === "job_seeker";
-  const isEmployer = user.userType === "employer";
+  const isJobSeeker = user.role === "job_seeker";
+  const isEmployer = user.role === "employer";
 
   // Filter applications based on status if not showing all
   const filteredApplications = activeTab === "all"
     ? applications
-    : applications?.filter((app) => app.status === activeTab);
+    : applications?.filter((app: Application) => app.status === activeTab);
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
@@ -172,7 +173,7 @@ export default function ApplicationsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6">
-              {filteredApplications.map((application) => (
+              {filteredApplications.map((application: Application) => (
                 <Card key={application.id}>
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row md:items-center p-6">

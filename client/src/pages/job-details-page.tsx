@@ -21,24 +21,28 @@ export default function JobDetailsPage() {
   const [resumeUrl, setResumeUrl] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
 
-  const {
-    data: job,
-    isLoading,
-    isError,
-  } = useQuery<Job>({
-    queryKey: [`/api/jobs/${id}`],
+  const { data: job, isLoading, isError } = useQuery({
+    queryKey: [`/jobs/${id}`],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/jobs/${id}`);
+      return response.json();
+    },
   });
 
-  const { data: hasApplied, isLoading: checkingApplication } = useQuery<boolean>({
-    queryKey: [`/api/jobs/${id}/has-applied`],
-    enabled: !!user && user.userType === "job_seeker",
+  const { data: hasApplied, isLoading: checkingApplication } = useQuery({
+    queryKey: [`/jobs/${id}/has-applied`],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/jobs/${id}/has-applied`);
+      return response.json();
+    },
+    enabled: !!user && user.role === 'job_seeker',
   });
 
   const applyMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", `/api/jobs/${id}/apply`, {
-        resumeUrl,
-        coverLetter,
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("POST", `/jobs/${id}/apply`, {
+        cover_letter: coverLetter,
+        resume_url: resumeUrl,
       });
       return response.json();
     },
@@ -48,7 +52,7 @@ export default function JobDetailsPage() {
         description: "Your job application has been submitted successfully.",
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/jobs/${id}/has-applied`] });
+      queryClient.invalidateQueries({ queryKey: [`/jobs/${id}/has-applied`] });
     },
     onError: (error: Error) => {
       toast({
@@ -70,7 +74,7 @@ export default function JobDetailsPage() {
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
-    applyMutation.mutate();
+    applyMutation.mutate(Number(id));
   };
 
   if (isLoading || checkingApplication) {

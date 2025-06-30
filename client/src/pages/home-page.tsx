@@ -63,24 +63,6 @@ export default function HomePage() {
     }).format(date);
   };
 
-  // Simple fallback if there's an issue
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to CareerCraft</h1>
-          <p className="text-gray-600 mb-4">Please log in to continue</p>
-          <button 
-            onClick={() => navigate("/auth")}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
@@ -96,21 +78,43 @@ export default function HomePage() {
                   Connect with top employers and discover opportunities that match your skills and career goals.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button 
-                    size="lg" 
-                    onClick={() => navigate("/jobs")}
-                    className="group relative overflow-hidden"
-                  >
-                    <span className="relative z-10">Browse Jobs</span>
-                  </Button>
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    onClick={() => navigate("/profile")}
-                    className="group relative overflow-hidden"
-                  >
-                    <span className="relative z-10">My Dashboard</span>
-                  </Button>
+                  {user ? (
+                    <>
+                      <Button 
+                        size="lg" 
+                        onClick={() => navigate("/jobs")}
+                        className="group relative overflow-hidden"
+                      >
+                        <span className="relative z-10">Browse Jobs</span>
+                      </Button>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        onClick={() => navigate("/profile")}
+                        className="group relative overflow-hidden"
+                      >
+                        <span className="relative z-10">My Dashboard</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button 
+                        size="lg" 
+                        onClick={() => navigate("/auth")}
+                        className="group relative overflow-hidden"
+                      >
+                        <span className="relative z-10">Get Started</span>
+                      </Button>
+                      <Button 
+                        size="lg" 
+                        variant="outline" 
+                        onClick={() => navigate("/jobs")}
+                        className="group relative overflow-hidden"
+                      >
+                        <span className="relative z-10">Browse Jobs</span>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="md:w-1/2 mt-10 md:mt-0">
@@ -188,6 +192,34 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Call to Action Section */}
+        {!user && (
+          <section className="py-16 bg-primary text-white">
+            <div className="container mx-auto px-4 md:px-6 text-center">
+              <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
+              <p className="text-xl mb-8 max-w-2xl mx-auto">
+                Join thousands of job seekers and employers who have found success on our platform.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  variant="secondary"
+                  onClick={() => navigate("/auth")}
+                >
+                  Sign Up Now
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => navigate("/auth")}
+                >
+                  Already have an account? Sign In
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );

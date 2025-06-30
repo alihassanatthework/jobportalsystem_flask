@@ -45,13 +45,11 @@ export default function AdminDashboardPage() {
 
   // Fetch all users
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ["/api/admin/users"],
+    queryKey: ["/admin/users"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/admin/users");
-      const data = await response.json();
-      return data;
+      const response = await apiRequest("GET", "/admin/users");
+      return response.json();
     },
-    enabled: !!user && user.userType === "admin",
   });
 
   // Mutation to update user status
@@ -65,7 +63,7 @@ export default function AdminDashboardPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/admin/users"] });
       toast({
         title: "User status updated",
         description: "The user's status has been successfully updated.",

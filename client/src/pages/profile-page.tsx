@@ -79,15 +79,19 @@ export default function ProfilePage() {
   });
   
   // Fetch employer's jobs
-  const { data: employerJobs, isLoading: loadingJobs } = useQuery<Job[]>({
-    queryKey: ['/api/jobs/employer'],
-    enabled: !!user && user.userType === 'employer',
+  const { data: employerJobs, isLoading: isLoadingJobs } = useQuery({
+    queryKey: ['/jobs/employer'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/jobs/employer');
+      return response.json();
+    },
+    enabled: !!user && user.role === 'employer',
   });
   
   // Add job mutation
   const addJobMutation = useMutation({
     mutationFn: async (data: Partial<Job>) => {
-      const response = await apiRequest('POST', '/api/jobs', data);
+      const response = await apiRequest('POST', '/jobs', data);
       return response.json();
     },
     onSuccess: () => {
@@ -95,8 +99,8 @@ export default function ProfilePage() {
         title: "Job posted successfully",
         description: "Your job has been posted and is now visible to job seekers.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs'] });
       setIsJobDialogOpen(false);
       resetJobForm();
     },
@@ -112,7 +116,7 @@ export default function ProfilePage() {
   // Update job mutation
   const updateJobMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Job> }) => {
-      const response = await apiRequest('PUT', `/api/jobs/${id}`, data);
+      const response = await apiRequest('PUT', `/jobs/${id}`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -120,8 +124,8 @@ export default function ProfilePage() {
         title: "Job updated successfully",
         description: "Your job posting has been updated.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs'] });
       setIsJobDialogOpen(false);
       setSelectedJob(null);
       resetJobForm();
@@ -138,7 +142,7 @@ export default function ProfilePage() {
   // Delete job mutation
   const deleteJobMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest('DELETE', `/api/jobs/${id}`);
+      const response = await apiRequest('DELETE', `/jobs/${id}`);
       return response.ok;
     },
     onSuccess: () => {
@@ -146,8 +150,8 @@ export default function ProfilePage() {
         title: "Job deleted successfully",
         description: "Your job posting has been removed.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs/employer'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs/employer'] });
+      queryClient.invalidateQueries({ queryKey: ['/jobs'] });
     },
     onError: (error: Error) => {
       toast({
@@ -159,49 +163,29 @@ export default function ProfilePage() {
   });
 
   // Fetch job seeker profile
-  const { data: jobSeekerProfile, isLoading: loadingJobSeekerProfile } = useQuery<JobSeekerProfile>({
-    queryKey: ["/api/profile/job-seeker"],
-    enabled: !!user && user.userType === "job_seeker",
-    onSuccess: (data) => {
-      if (data) {
-        setJobSeekerForm({
-          fullName: data.fullName || "",
-          headline: data.headline || "",
-          bio: data.bio || "",
-          skills: (data.skills || []).join(", "),
-          experience: data.experience || "",
-          education: data.education || "",
-          location: data.location || "",
-          phone: data.phone || "",
-          resumeUrl: data.resumeUrl || "",
-        });
-      }
+  const { data: jobSeekerProfile, isLoading: isLoadingJobSeekerProfile } = useQuery({
+    queryKey: ["/users/profile"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/users/profile");
+      return response.json();
     },
+    enabled: !!user && user.role === 'job_seeker',
   });
 
   // Fetch employer profile
-  const { data: employerProfile, isLoading: loadingEmployerProfile } = useQuery<EmployerProfile>({
-    queryKey: ["/api/profile/employer"],
-    enabled: !!user && user.userType === "employer",
-    onSuccess: (data) => {
-      if (data) {
-        setEmployerForm({
-          companyName: data.companyName || "",
-          industry: data.industry || "",
-          companySize: data.companySize || "",
-          description: data.description || "",
-          location: data.location || "",
-          website: data.website || "",
-          logoUrl: data.logoUrl || "",
-        });
-      }
+  const { data: employerProfile, isLoading: isLoadingEmployerProfile } = useQuery({
+    queryKey: ["/users/profile"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/users/profile");
+      return response.json();
     },
+    enabled: !!user && user.role === 'employer',
   });
 
   // Update job seeker profile mutation
   const updateJobSeekerMutation = useMutation({
     mutationFn: async (data: Partial<JobSeekerProfile>) => {
-      const response = await apiRequest("PUT", "/api/profile/job-seeker", data);
+      const response = await apiRequest("PUT", "/users/profile", data);
       return response.json();
     },
     onSuccess: () => {
@@ -209,7 +193,7 @@ export default function ProfilePage() {
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/profile/job-seeker"] });
+      queryClient.invalidateQueries({ queryKey: ["/users/profile"] });
     },
     onError: (error: Error) => {
       toast({
@@ -223,7 +207,7 @@ export default function ProfilePage() {
   // Update employer profile mutation
   const updateEmployerMutation = useMutation({
     mutationFn: async (data: Partial<EmployerProfile>) => {
-      const response = await apiRequest("PUT", "/api/profile/employer", data);
+      const response = await apiRequest("PUT", "/users/profile", data);
       return response.json();
     },
     onSuccess: () => {
@@ -231,7 +215,7 @@ export default function ProfilePage() {
         title: "Company profile updated",
         description: "Your company information has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/profile/employer"] });
+      queryClient.invalidateQueries({ queryKey: ["/users/profile"] });
     },
     onError: (error: Error) => {
       toast({
@@ -362,14 +346,15 @@ export default function ProfilePage() {
     
     const jobData = {
       title: jobForm.title,
-      location: jobForm.location,
-      jobType: jobForm.jobType,
       description: jobForm.description,
       requirements: jobForm.requirements,
-      salaryMin: jobForm.salaryMin,
-      salaryMax: jobForm.salaryMax,
-      contactEmail: jobForm.contactEmail,
-      applicationDeadline: jobForm.applicationDeadline ? new Date(jobForm.applicationDeadline).toISOString() : undefined
+      job_type: jobForm.jobType,
+      experience_level: "entry", // Default value, should be selectable in form
+      category_id: 1, // Default value, should be selectable in form
+      min_salary: jobForm.salaryMin ? parseFloat(jobForm.salaryMin) : null,
+      max_salary: jobForm.salaryMax ? parseFloat(jobForm.salaryMax) : null,
+      city: jobForm.location,
+      application_deadline: jobForm.applicationDeadline ? new Date(jobForm.applicationDeadline).toISOString() : null
     };
     
     if (selectedJob) {
@@ -391,10 +376,10 @@ export default function ProfilePage() {
     );
   }
 
-  const isJobSeeker = user.userType === "job_seeker";
-  const isEmployer = user.userType === "employer";
-  const isAdmin = user.userType === "admin";
-  const isLoading = loadingJobSeekerProfile || loadingEmployerProfile;
+  const isJobSeeker = user.role === "job_seeker";
+  const isEmployer = user.role === "employer";
+  const isAdmin = user.role === "admin";
+  const isLoading = isLoadingJobSeekerProfile || isLoadingEmployerProfile;
 
   const getProfileInitials = () => {
     if (isJobSeeker && jobSeekerProfile?.fullName) {
@@ -405,7 +390,7 @@ export default function ProfilePage() {
     } else if (isEmployer && employerProfile?.companyName) {
       return employerProfile.companyName[0];
     } else {
-      return user.username[0].toUpperCase();
+      return user.email ? user.email[0].toUpperCase() : 'U';
     }
   };
 
@@ -440,7 +425,7 @@ export default function ProfilePage() {
                     ? jobSeekerProfile.fullName
                     : isEmployer && employerProfile?.companyName
                     ? employerProfile.companyName
-                    : user.username}
+                    : user.email || 'User'}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {isJobSeeker
@@ -644,7 +629,7 @@ export default function ProfilePage() {
                         <Label htmlFor="username">Username</Label>
                         <Input
                           id="username"
-                          value={user.username}
+                          value={user.email || 'User'}
                           disabled
                         />
                       </div>
@@ -1217,7 +1202,7 @@ export default function ProfilePage() {
                     </Button>
                   </div>
                   
-                  {loadingJobs ? (
+                  {isLoadingJobs ? (
                     <div className="flex items-center justify-center h-64">
                       <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
                       <p>Loading your job listings...</p>

@@ -103,6 +103,48 @@ def get_jobs():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@jobs_bp.route('/employer', methods=['GET'])
+@jwt_required()
+def get_employer_jobs():
+    """Get jobs posted by the current employer"""
+    try:
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user or user.role != UserRole.EMPLOYER:
+            return jsonify({'error': 'Only employers can access this endpoint'}), 403
+        
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        # Get jobs posted by the current employer
+        query = Job.query.filter(Job.employer_id == current_user_id)
+        
+        # Sort by creation date (newest first)
+        query = query.order_by(desc(Job.created_at))
+        
+        # Pagination
+        pagination = query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        jobs = [job.to_dict() for job in pagination.items]
+        
+        return jsonify({
+            'jobs': jobs,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'pages': pagination.pages,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @jobs_bp.route('/<job_id>', methods=['GET'])
 def get_job(job_id):
     """Get a specific job by ID"""
@@ -332,6 +374,55 @@ def get_experience_levels():
     try:
         experience_levels = [level.value for level in ExperienceLevel]
         return jsonify({'experience_levels': experience_levels}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@jobs_bp.route('/<job_id>/apply', methods=['POST'])
+@jwt_required()
+def apply_for_job(job_id):
+    """Apply for a specific job"""
+    try:
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user or user.role != UserRole.JOB_SEEKER:
+            return jsonify({'error': 'Only job seekers can apply for jobs'}), 403
+        
+        data = request.get_json()
+        
+        # Add job_id to the data
+        data['job_id'] = int(job_id)
+        
+        # Forward to applications endpoint
+        from app.applications.routes import create_application
+        return create_application()
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@jobs_bp.route('/<job_id>/has-applied', methods=['GET'])
+@jwt_required()
+def check_has_applied(job_id):
+    """Check if current user has applied for this job"""
+    try:
+        current_user_id = get_jwt_identity()
+        user = User.query.get(current_user_id)
+        
+        if not user or user.role != UserRole.JOB_SEEKER:
+            return jsonify({'error': 'Only job seekers can check application status'}), 403
+        
+        # Check if user has already applied
+        from app.models.application import Application
+        existing_application = Application.query.filter_by(
+            job_id=int(job_id),
+            applicant_id=current_user_id
+        ).first()
+        
+        return jsonify({
+            'has_applied': existing_application is not None,
+            'application': existing_application.to_dict() if existing_application else None
+        }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500 

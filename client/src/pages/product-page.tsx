@@ -7,13 +7,18 @@ import Footer from "@/components/Footer";
 import ProductCustomizer from "@/components/ProductCustomizer";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/hooks/use-cart";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ProductPage() {
   const [_, params] = useRoute<{ id: string }>("/product/:id");
   const productId = params?.id ? parseInt(params.id) : 0;
   
   const { data: product, isLoading } = useQuery({
-    queryKey: [`/api/products/${productId}`],
+    queryKey: [`/products/${productId}`],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/products/${productId}`);
+      return response.json();
+    },
   });
   
   const { addToCart } = useCart();
