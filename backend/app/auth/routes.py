@@ -16,7 +16,7 @@ def register():
         data = request.get_json()
         
         # Validate required fields
-        required_fields = ['email', 'password', 'first_name', 'last_name', 'role']
+        required_fields = ['email', 'password', 'username', 'role']
         for field in required_fields:
             if not data.get(field):
                 return jsonify({'error': f'{field} is required'}), 400
@@ -49,8 +49,7 @@ def register():
         # Create user profile
         profile = UserProfile(
             user_id=user.id,
-            first_name=data['first_name'],
-            last_name=data['last_name'],
+            username=data['username'],
             phone=data.get('phone'),
             country=data.get('country'),
             state=data.get('state'),

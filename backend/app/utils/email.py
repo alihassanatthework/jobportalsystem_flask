@@ -1,6 +1,6 @@
 from flask import current_app, render_template_string
 from flask_mail import Message
-from app import mail
+from app import mail, db
 import uuid
 
 def send_verification_email(user):
@@ -9,7 +9,7 @@ def send_verification_email(user):
         # Generate verification token
         verification_token = str(uuid.uuid4())
         user.email_verification_token = verification_token
-        user.save()
+        db.session.commit()
         
         # Create verification URL
         verification_url = f"{current_app.config.get('FRONTEND_URL', 'http://localhost:3000')}/verify-email/{verification_token}"

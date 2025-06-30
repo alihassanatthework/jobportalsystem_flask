@@ -37,7 +37,7 @@ def create_app(config_name='development'):
     jwt.init_app(app)
     bcrypt.init_app(app)
     mail.init_app(app)
-    CORS(app, origins=["http://localhost:3000", "http://localhost:5173"])
+    CORS(app, origins=["http://localhost:3000", "http://localhost:5173"], supports_credentials=True)
     socketio.init_app(app, cors_allowed_origins="*")
     
     # Import models to register them with SQLAlchemy
@@ -63,6 +63,62 @@ def create_app(config_name='development'):
     # Error handlers
     from app.utils.error_handlers import register_error_handlers
     register_error_handlers(app)
+    
+    # Root route
+    @app.route('/')
+    def index():
+        return {
+            'message': 'HandmadeCareers API is running!',
+            'version': '1.0.0',
+            'endpoints': {
+                'auth': '/api/auth',
+                'users': '/api/users',
+                'jobs': '/api/jobs',
+                'applications': '/api/applications',
+                'messages': '/api/messages',
+                'admin': '/api/admin',
+                'analytics': '/api/analytics'
+            },
+            'frontend': 'http://localhost:5173'
+        }
+    
+    # API info route
+    @app.route('/api')
+    def api_info():
+        return {
+            'message': 'HandmadeCareers API Endpoints',
+            'version': '1.0.0',
+            'endpoints': {
+                'auth': {
+                    'register': '/api/auth/register',
+                    'login': '/api/auth/login',
+                    'logout': '/api/auth/logout',
+                    'refresh': '/api/auth/refresh'
+                },
+                'users': {
+                    'profile': '/api/users/profile',
+                    'update_profile': '/api/users/profile'
+                },
+                'jobs': {
+                    'list': '/api/jobs',
+                    'create': '/api/jobs',
+                    'details': '/api/jobs/<id>'
+                },
+                'applications': {
+                    'create': '/api/applications',
+                    'details': '/api/applications/<id>'
+                }
+            },
+            'frontend': 'http://localhost:5173'
+        }
+    
+    # Test route
+    @app.route('/api/test')
+    def test_api():
+        return {
+            'message': 'API is working!',
+            'status': 'success'
+        }
     
     # JWT error handlers
     @jwt.expired_token_loader

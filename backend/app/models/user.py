@@ -18,6 +18,9 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     is_verified = db.Column(db.Boolean, default=False)
     email_verified_at = db.Column(db.DateTime)
+    email_verification_token = db.Column(db.String(255))
+    password_reset_token = db.Column(db.String(255))
+    password_reset_expires = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = db.Column(db.DateTime)
@@ -25,12 +28,14 @@ class User(db.Model):
     # Relationships
     profile = db.relationship('UserProfile', backref='user', uselist=False, cascade='all, delete-orphan')
     jobs_posted = db.relationship('Job', backref='employer', lazy='dynamic')
-    applications = db.relationship('Application', backref='applicant', lazy='dynamic')
+    applications = db.relationship('Application', foreign_keys='Application.applicant_id', backref='applicant', lazy='dynamic')
     sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic')
     received_messages = db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient', lazy='dynamic')
     notifications = db.relationship('Notification', backref='user', lazy='dynamic')
     wishlist_items = db.relationship('Wishlist', backref='user', lazy='dynamic')
     feedback_submitted = db.relationship('Feedback', backref='user', lazy='dynamic')
+    related_notifications = db.relationship('Notification', foreign_keys='Notification.related_user_id', backref='related_user', lazy='dynamic')
+    status_updates = db.relationship('Application', foreign_keys='Application.status_updated_by', backref='status_updater', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
@@ -56,8 +61,7 @@ class UserProfile(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     
     # Basic Information
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
+    username = db.Column(db.String(50), nullable=False, unique=True)
     phone = db.Column(db.String(20))
     date_of_birth = db.Column(db.Date)
     gender = db.Column(db.String(10))
@@ -107,8 +111,7 @@ class UserProfile(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
+            'username': self.username,
             'phone': self.phone,
             'date_of_birth': self.date_of_birth.isoformat() if self.date_of_birth else None,
             'gender': self.gender,

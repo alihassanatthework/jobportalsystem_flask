@@ -15,16 +15,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const loginFormSchema = z.object({
-  username: z.string().min(3, "Username must be at least 3 characters"),
+  email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 const registerFormSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Please enter a valid email"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-  userType: z.enum(["job_seeker", "employer"], {
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.enum(["job_seeker", "employer"], {
     required_error: "Please select a user type",
   }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -59,7 +59,7 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -72,7 +72,7 @@ export default function AuthPage() {
       email: "",
       password: "",
       confirmPassword: "",
-      userType: "job_seeker", // Default value
+      role: "job_seeker", // Default value
     },
   });
 
@@ -90,8 +90,8 @@ export default function AuthPage() {
   };
 
   const onRegisterSubmit = (data: RegisterFormValues) => {
-    const { username, password, email, userType } = data;
-    registerMutation.mutate({ username, password, email, userType });
+    const { username, email, password, role } = data;
+    registerMutation.mutate({ username, email, password, role });
   };
   
   const handleForgotPassword = (data: ForgotPasswordValues) => {
@@ -195,12 +195,12 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="username"
+                        name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
+                            <FormLabel>Email</FormLabel>
                             <FormControl>
-                              <Input placeholder="Enter your username" {...field} />
+                              <Input placeholder="Enter your email" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -263,7 +263,7 @@ export default function AuthPage() {
                           <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                              <Input placeholder="Choose a username" {...field} />
+                              <Input placeholder="Enter your username" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -284,7 +284,7 @@ export default function AuthPage() {
                       />
                       <FormField
                         control={registerForm.control}
-                        name="userType"
+                        name="role"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>I am registering as</FormLabel>

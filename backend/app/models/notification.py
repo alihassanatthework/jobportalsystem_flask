@@ -54,6 +54,7 @@ class Notification(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    user = db.relationship('User', foreign_keys=[user_id])
     related_job = db.relationship('Job', foreign_keys=[related_job_id])
     related_application = db.relationship('Application', foreign_keys=[related_application_id])
     related_message = db.relationship('Message', foreign_keys=[related_message_id])
@@ -79,6 +80,7 @@ class Notification(db.Model):
             'notification_metadata': self.notification_metadata,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'user': self.user.to_dict() if self.user else None,
             'related_job': self.related_job.to_dict() if self.related_job else None,
             'related_application': self.related_application.to_dict() if self.related_application else None,
             'related_message': self.related_message.to_dict() if self.related_message else None,
