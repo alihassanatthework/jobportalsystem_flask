@@ -50,7 +50,7 @@ class Application(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    status_updater = db.relationship('User', foreign_keys=[status_updated_by])
+    status_updater = db.relationship('User', foreign_keys=[status_updated_by], back_populates='status_updates')
     
     def to_dict(self):
         return {

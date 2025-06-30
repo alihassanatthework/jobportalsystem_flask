@@ -1,5 +1,4 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -9,17 +8,10 @@ from flask_socketio import SocketIO
 from datetime import timedelta
 import os
 from dotenv import load_dotenv
+from app import db, bcrypt, migrate, jwt, mail, socketio
 
 # Load environment variables
 load_dotenv()
-
-# Initialize extensions
-db = SQLAlchemy()
-migrate = Migrate()
-jwt = JWTManager()
-bcrypt = Bcrypt()
-mail = Mail()
-socketio = SocketIO()
 
 def create_app(config_name='development'):
     """Application factory pattern"""
@@ -50,7 +42,10 @@ def create_app(config_name='development'):
     jwt.init_app(app)
     bcrypt.init_app(app)
     mail.init_app(app)
-    CORS(app, origins=["http://localhost:3000", "http://localhost:5173"])
+    
+    # Simple CORS configuration
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"])
+    
     socketio.init_app(app, cors_allowed_origins="*")
     
     # Import models to register them with SQLAlchemy

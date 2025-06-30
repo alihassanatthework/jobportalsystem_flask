@@ -46,7 +46,11 @@ def register():
         )
         user.set_password(data['password'])
         
-        # Create user profile
+        # Add user to session and flush to get the ID
+        db.session.add(user)
+        db.session.flush()  # This generates the ID without committing
+        
+        # Create user profile with the user's ID
         profile = UserProfile(
             user_id=user.id,
             username=data['username'],
@@ -62,7 +66,6 @@ def register():
             profile.company_website = data.get('company_website')
             profile.industry = data.get('industry')
         
-        db.session.add(user)
         db.session.add(profile)
         db.session.commit()
         

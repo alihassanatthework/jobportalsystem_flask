@@ -27,15 +27,15 @@ class User(db.Model):
     
     # Relationships
     profile = db.relationship('UserProfile', backref='user', uselist=False, cascade='all, delete-orphan')
-    jobs_posted = db.relationship('Job', backref='employer', lazy='dynamic')
+    jobs_posted = db.relationship('Job', foreign_keys='Job.employer_id', backref='employer', lazy='dynamic')
     applications = db.relationship('Application', foreign_keys='Application.applicant_id', backref='applicant', lazy='dynamic')
-    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender', lazy='dynamic')
-    received_messages = db.relationship('Message', foreign_keys='Message.recipient_id', backref='recipient', lazy='dynamic')
-    notifications = db.relationship('Notification', backref='user', lazy='dynamic')
-    wishlist_items = db.relationship('Wishlist', backref='user', lazy='dynamic')
-    feedback_submitted = db.relationship('Feedback', backref='user', lazy='dynamic')
-    related_notifications = db.relationship('Notification', foreign_keys='Notification.related_user_id', backref='related_user', lazy='dynamic')
-    status_updates = db.relationship('Application', foreign_keys='Application.status_updated_by', backref='status_updater', lazy='dynamic')
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', back_populates='sender', lazy='dynamic')
+    received_messages = db.relationship('Message', foreign_keys='Message.recipient_id', back_populates='recipient', lazy='dynamic')
+    notifications = db.relationship('Notification', foreign_keys='Notification.user_id', back_populates='user', lazy='dynamic')
+    wishlist_items = db.relationship('Wishlist', foreign_keys='Wishlist.user_id', back_populates='user', lazy='dynamic')
+    feedback_submitted = db.relationship('Feedback', foreign_keys='Feedback.user_id', lazy='dynamic')
+    related_notifications = db.relationship('Notification', foreign_keys='Notification.related_user_id', back_populates='related_user', lazy='dynamic')
+    status_updates = db.relationship('Application', foreign_keys='Application.status_updated_by', back_populates='status_updater', lazy='dynamic')
     
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')

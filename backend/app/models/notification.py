@@ -54,11 +54,11 @@ class Notification(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User', foreign_keys=[user_id])
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='notifications')
     related_job = db.relationship('Job', foreign_keys=[related_job_id])
     related_application = db.relationship('Application', foreign_keys=[related_application_id])
     related_message = db.relationship('Message', foreign_keys=[related_message_id])
-    related_user = db.relationship('User', foreign_keys=[related_user_id])
+    related_user = db.relationship('User', foreign_keys=[related_user_id], back_populates='related_notifications')
     
     def to_dict(self):
         return {

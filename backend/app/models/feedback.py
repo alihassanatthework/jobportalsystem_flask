@@ -53,6 +53,7 @@ class Feedback(db.Model):
     resolved_at = db.Column(db.DateTime)
     
     # Relationships
+    user = db.relationship('User', foreign_keys=[user_id])
     assigned_admin = db.relationship('User', foreign_keys=[assigned_to])
     resolver = db.relationship('User', foreign_keys=[resolved_by])
     

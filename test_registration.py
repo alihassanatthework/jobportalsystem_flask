@@ -6,8 +6,8 @@ def test_registration():
     url = "http://localhost:5000/api/auth/register"
     
     test_data = {
-        "username": "testuser",
-        "email": "test@example.com",
+        "username": "testuser2",
+        "email": "test2@example.com",
         "password": "testpassword123",
         "role": "job_seeker"
     }

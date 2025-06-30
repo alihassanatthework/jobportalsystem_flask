@@ -25,6 +25,7 @@ class Wishlist(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='wishlist_items')
     candidate = db.relationship('User', foreign_keys=[candidate_id])
     
     def to_dict(self):
