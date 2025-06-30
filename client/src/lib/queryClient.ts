@@ -8,6 +8,11 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// Get token from localStorage
+function getAuthToken(): string | null {
+  return localStorage.getItem('access_token');
+}
+
 export async function apiRequest(
   method: string,
   url: string,
@@ -16,9 +21,20 @@ export async function apiRequest(
   // If URL is relative, prepend the API base URL
   const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
   
+  const headers: Record<string, string> = {};
+  if (data) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  // Add authorization header if token exists
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  
   const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
   });
 
@@ -36,7 +52,14 @@ export const getQueryFn: <T>(options: {
     // If URL is relative, prepend the API base URL
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
     
-    const res = await fetch(fullUrl);
+    const headers: Record<string, string> = {};
+    // Add authorization header if token exists
+    const token = getAuthToken();
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    
+    const res = await fetch(fullUrl, { headers });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;

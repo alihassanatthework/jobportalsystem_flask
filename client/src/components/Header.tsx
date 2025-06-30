@@ -70,7 +70,7 @@ export default function Header() {
             </Link>
             
             {/* Show "For Job Seekers" only to non-employers */}
-            {(!user || user.userType !== "employer") && (
+            {(!user || user.role !== "employer") && (
               <Link 
                 href="/job-seekers" 
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
@@ -84,7 +84,7 @@ export default function Header() {
             )}
             
             {/* Show "For Employers" only to non-job seekers */}
-            {(!user || user.userType !== "job_seeker") && (
+            {(!user || user.role !== "job_seeker") && (
               <Link 
                 href="/employers" 
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
@@ -98,7 +98,7 @@ export default function Header() {
             )}
             
             {/* Admin specific navigation */}
-            {user && user.userType === "admin" && (
+            {user && user.role === "admin" && (
               <Link 
                 href="/admin/dashboard" 
                 className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
@@ -152,17 +152,17 @@ export default function Header() {
                     <Button variant="ghost" className="relative h-8 flex items-center gap-2 p-1 pr-2">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className="bg-primary/10 text-primary">
-                          {user.username.substring(0, 2).toUpperCase()}
+                          {user.email ? user.email.substring(0, 2).toUpperCase() : 'U'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="hidden md:block text-left">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                          {user.username}
+                          {user.email || 'User'}
                         </span>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {user.userType === "admin" 
+                          {user.role === "admin" 
                             ? "Administrator" 
-                            : user.userType === "job_seeker" 
+                            : user.role === "job_seeker" 
                               ? "Job Seeker" 
                               : "Employer"}
                         </p>
@@ -172,11 +172,11 @@ export default function Header() {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.username}</p>
+                        <p className="text-sm font-medium leading-none">{user.email || 'User'}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                          {user.userType === "admin" 
+                          {user.role === "admin" 
                             ? "Administrator" 
-                            : user.userType === "job_seeker" 
+                            : user.role === "job_seeker" 
                               ? "Job Seeker" 
                               : "Employer"}
                         </p>
@@ -192,7 +192,7 @@ export default function Header() {
                       </DropdownMenuItem>
                       
                       {/* Admin options */}
-                      {user.userType === "admin" && (
+                      {user.role === "admin" && (
                         <>
                           <DropdownMenuItem asChild>
                             <Link href="/admin/dashboard" className="cursor-pointer">
@@ -210,7 +210,7 @@ export default function Header() {
                       )}
                       
                       {/* Job Seeker options */}
-                      {user.userType === "job_seeker" && (
+                      {user.role === "job_seeker" && (
                         <>
                           <DropdownMenuItem asChild>
                             <Link href="/applications" className="cursor-pointer">
@@ -228,7 +228,7 @@ export default function Header() {
                       )}
                       
                       {/* Employer options */}
-                      {user.userType === "employer" && (
+                      {user.role === "employer" && (
                         <>
                           <DropdownMenuItem asChild>
                             <Link href="/profile?tab=posted-jobs" className="cursor-pointer">
@@ -318,7 +318,7 @@ export default function Header() {
             </Link>
             
             {/* Show "For Job Seekers" only to non-employers */}
-            {(!user || user.userType !== "employer") && (
+            {(!user || user.role !== "employer") && (
               <Link 
                 href="/job-seekers" 
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
@@ -333,7 +333,7 @@ export default function Header() {
             )}
             
             {/* Show "For Employers" only to non-job seekers */}
-            {(!user || user.userType !== "job_seeker") && (
+            {(!user || user.role !== "job_seeker") && (
               <Link 
                 href="/employers" 
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
@@ -348,7 +348,7 @@ export default function Header() {
             )}
             
             {/* Admin specific navigation */}
-            {user && user.userType === "admin" && (
+            {user && user.role === "admin" && (
               <Link 
                 href="/admin/dashboard" 
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
@@ -391,7 +391,7 @@ export default function Header() {
                 </Link>
                 
                 {/* Job Seeker links */}
-                {user.userType === "job_seeker" && (
+                {user.role === "job_seeker" && (
                   <>
                     <Link 
                       href="/applications" 
@@ -419,7 +419,7 @@ export default function Header() {
                 )}
                 
                 {/* Employer links */}
-                {user.userType === "employer" && (
+                {user.role === "employer" && (
                   <>
                     <Link 
                       href="/profile?tab=posted-jobs" 
@@ -450,7 +450,7 @@ export default function Header() {
                 )}
                 
                 {/* Admin links */}
-                {user.userType === "admin" && (
+                {user.role === "admin" && (
                   <>
                     <Link 
                       href="/admin/dashboard" 
@@ -496,14 +496,14 @@ export default function Header() {
               <div className="flex-shrink-0">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    {user ? user.username.substring(0, 2).toUpperCase() : 'GU'}
+                    {user ? user.email ? user.email.substring(0, 2).toUpperCase() : 'U' : 'GU'}
                   </AvatarFallback>
                 </Avatar>
               </div>
               <div className="ml-3 flex-grow">
                 {user ? (
                   <>
-                    <div className="text-base font-medium text-gray-800 dark:text-white">{user.username}</div>
+                    <div className="text-base font-medium text-gray-800 dark:text-white">{user.email || 'User'}</div>
                     <Button 
                       variant="link" 
                       className="text-sm font-medium text-gray-500 dark:text-gray-400 p-0" 

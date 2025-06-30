@@ -43,8 +43,13 @@ def create_app(config_name='development'):
     bcrypt.init_app(app)
     mail.init_app(app)
     
-    # Simple CORS configuration
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"])
+    # Comprehensive CORS configuration
+    CORS(app, 
+         origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept", "Origin"],
+         supports_credentials=False,
+         expose_headers=["Content-Type", "Authorization"])
     
     socketio.init_app(app, cors_allowed_origins="*")
     

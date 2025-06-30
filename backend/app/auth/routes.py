@@ -76,8 +76,14 @@ def register():
             # Log error but don't fail registration
             print(f"Failed to send verification email: {e}")
         
+        # Create tokens
+        access_token = create_access_token(identity=user.id)
+        refresh_token = create_refresh_token(identity=user.id)
+        
         return jsonify({
             'message': 'User registered successfully',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
             'user': user.to_dict(),
             'profile': profile.to_dict()
         }), 201
@@ -276,10 +282,7 @@ def get_current_user():
         if not user:
             return jsonify({'error': 'User not found'}), 404
         
-        return jsonify({
-            'user': user.to_dict(),
-            'profile': user.profile.to_dict() if user.profile else None
-        }), 200
+        return jsonify(user.to_dict()), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500 

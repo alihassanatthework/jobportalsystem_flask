@@ -4,17 +4,17 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
+import { insertUserSchema, User, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
-  user: SelectUser | null;
+  user: User | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
+  loginMutation: UseMutationResult<User, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  registerMutation: UseMutationResult<User, Error, InsertUser>;
 };
 
 type LoginData = Pick<InsertUser, "email" | "password">;
@@ -26,8 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     error,
     isLoading,
-  } = useQuery<SelectUser | undefined, Error>({
-    queryKey: ["/user"],
+  } = useQuery<User | undefined, Error>({
+    queryKey: ["/auth/me"],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
 
@@ -36,8 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/auth/login", credentials);
       return await res.json();
     },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/user"], user);
+    onSuccess: (data: any) => {
+      // Store the token
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+      }
+      // Store user data
+      queryClient.setQueryData(["/auth/me"], data.user);
     },
     onError: (error: Error) => {
       toast({
@@ -53,8 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/auth/register", credentials);
       return await res.json();
     },
-    onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/user"], user);
+    onSuccess: (data: any) => {
+      // Store the token if provided
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+      }
+      // Store user data
+      queryClient.setQueryData(["/auth/me"], data.user);
     },
     onError: (error: Error) => {
       toast({
@@ -70,7 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/auth/logout");
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/user"], null);
+      // Remove token and user data
+      localStorage.removeItem('access_token');
+      queryClient.setQueryData(["/auth/me"], null);
     },
     onError: (error: Error) => {
       toast({
