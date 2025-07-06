@@ -1,19 +1,110 @@
-# Python
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.development
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+backend/instance/
+backend/database/
+
+# Uploaded files (resumes, CVs, etc.)
+backend/uploads/
+backend/backend/uploads/
+
+# Python cache and virtual environment
 __pycache__/
 *.pyc
+venv/
+env/
 
-# Node
+# Node modules and build files
 node_modules/
-
-# Environment
-.env
-*.env
-
-# Build
 dist/
 build/
 
-# IDE and system
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# ----------------------
+# General
+# ----------------------
+*.log
+*.tmp
+*.bak
+*.old
+*.pid
+*.seed
+
+# ----------------------
+# Environment Files (SECRETS!)
+# ----------------------
+.env.*
+*.env
+*.env.local
+
+# ----------------------
+# Python (Flask backend)
+# ----------------------
+*.py[cod]
+*.so
+*.egg-info/
+*.sqlite3
+*.db
+
+# Flask instance folder
+instance/
+config.py  # if you store sensitive config
+
+# Virtual environments
+.venv/
+ENV/
+
+# pytest/mypy/cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+.cache/
+.tox/
+coverage.xml
+
+# ----------------------
+# React + Tailwind frontend
+# ----------------------
+node_modules/
+build/
+dist/
+.cache/
+.yarn/
+.npm/
+package-lock.json
+yarn.lock
+
+# PostCSS / Tailwind cache
+.pnpm-debug.log
+postcss.config.js
+tailwind.config.js
+*.css.map
+
+# ----------------------
+# IDEs & Editors
+# ----------------------
+*.sublime-project
+*.sublime-workspace
+
+# ----------------------
+# Database dumps / secrets
+# ----------------------
+*.sql
+*.dump
+*.tar

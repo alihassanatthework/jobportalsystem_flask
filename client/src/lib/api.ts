@@ -63,24 +63,32 @@ export async function apiRequest(
   data?: unknown,
   token?: string
 ): Promise<Response> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
+  const headers: Record<string, string> = {};
+
+  // Only set Content-Type if not sending FormData
+  const isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   const response = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: data
+      ? isFormData
+        ? (data as FormData)
+        : JSON.stringify(data)
+      : undefined,
   });
-  
+
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`${response.status}: ${errorText}`);
   }
-  
+
   return response;
 } 

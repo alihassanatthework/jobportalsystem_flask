@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
@@ -105,6 +105,12 @@ def create_app(config_name='development'):
 
 # Create app instance at module level for Flask CLI
 app = create_app()
+
+@app.route('/uploads/<filename>', methods=['GET'])
+def uploaded_file(filename):
+    uploads_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'uploads'))
+    print(f"[DEBUG] Serving file from: {uploads_dir}, filename: {filename}")
+    return send_from_directory(uploads_dir, filename)
 
 if __name__ == '__main__':
     with app.app_context():

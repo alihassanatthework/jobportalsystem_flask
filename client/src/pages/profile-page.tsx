@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
@@ -43,39 +43,40 @@ export default function ProfilePage() {
   // Job Form State
   const [jobForm, setJobForm] = useState({
     title: "",
-    company: "",
+    company_name: "",
     location: "",
-    jobType: "full-time",
+    job_type: "full_time" as const,
     description: "",
-    requirements: "",
-    salaryMin: "",
-    salaryMax: "",
-    contactEmail: "",
-    applicationDeadline: ""
+    salary_min: "",
+    salary_max: "",
+    experience_level: "entry" as const,
   });
 
   // Job Seeker Profile Form State
   const [jobSeekerForm, setJobSeekerForm] = useState({
-    fullName: "",
-    headline: "",
+    username: "",
     bio: "",
     skills: "",
-    experience: "",
-    education: "",
-    location: "",
+    experience_years: "",
+    education_level: "",
+    country: "",
+    state: "",
+    city: "",
     phone: "",
-    resumeUrl: "",
+    resume_url: "",
   });
 
   // Employer Profile Form State
   const [employerForm, setEmployerForm] = useState({
-    companyName: "",
+    company_name: "",
     industry: "",
-    companySize: "",
-    description: "",
-    location: "",
-    website: "",
-    logoUrl: "",
+    company_size: "",
+    company_description: "",
+    country: "",
+    state: "",
+    city: "",
+    company_website: "",
+    phone: "",
   });
   
   // Fetch employer's jobs
@@ -229,28 +230,38 @@ export default function ProfilePage() {
   const handleJobSeekerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateJobSeekerMutation.mutate({
-      fullName: jobSeekerForm.fullName,
-      headline: jobSeekerForm.headline,
+      username: jobSeekerForm.username,
       bio: jobSeekerForm.bio,
+      headline: jobSeekerForm.bio, // Use bio as headline
+      summary: jobSeekerForm.bio, // Use bio as summary
       skills: jobSeekerForm.skills.split(",").map((skill) => skill.trim()).filter(Boolean),
-      experience: jobSeekerForm.experience,
-      education: jobSeekerForm.education,
-      location: jobSeekerForm.location,
+      experience_years: jobSeekerForm.experience_years ? Number(jobSeekerForm.experience_years) : undefined,
+      education_level: jobSeekerForm.education_level,
+      country: jobSeekerForm.country,
+      state: jobSeekerForm.state,
+      city: jobSeekerForm.city,
       phone: jobSeekerForm.phone,
-      resumeUrl: jobSeekerForm.resumeUrl,
+      resume_url: jobSeekerForm.resume_url,
+      // Include structured data from CV parsing
+      work_experience: parsedCVData.work_experience,
+      education: parsedCVData.education,
+      languages: parsedCVData.languages,
+      certifications: parsedCVData.certifications,
     });
   };
 
   const handleEmployerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateEmployerMutation.mutate({
-      companyName: employerForm.companyName,
+      company_name: employerForm.company_name,
       industry: employerForm.industry,
-      companySize: employerForm.companySize,
-      description: employerForm.description,
-      location: employerForm.location,
-      website: employerForm.website,
-      logoUrl: employerForm.logoUrl,
+      company_size: employerForm.company_size,
+      company_description: employerForm.company_description,
+      country: employerForm.country,
+      state: employerForm.state,
+      city: employerForm.city,
+      company_website: employerForm.company_website,
+      phone: employerForm.phone,
     });
   };
 
@@ -274,30 +285,37 @@ export default function ProfilePage() {
   const resetJobForm = () => {
     setJobForm({
       title: "",
-      company: "",
+      company_name: "",
       location: "",
-      jobType: "full-time",
+      job_type: "full_time",
       description: "",
       requirements: "",
-      salaryMin: "",
-      salaryMax: "",
-      contactEmail: "",
-      applicationDeadline: ""
+      salary_min: "",
+      salary_max: "",
+      contact_email: "",
+      application_deadline: ""
     });
   };
   
-  const handleJobFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleJobFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setJobForm((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
-  
+
   const handleJobTypeChange = (value: string) => {
     setJobForm((prev) => ({
       ...prev,
-      jobType: value,
+      job_type: value as "full_time" | "part_time" | "contract" | "internship",
+    }));
+  };
+
+  const handleExperienceLevelChange = (value: string) => {
+    setJobForm((prev) => ({
+      ...prev,
+      experience_level: value as "entry" | "mid" | "senior" | "executive",
     }));
   };
   
@@ -305,15 +323,15 @@ export default function ProfilePage() {
     setSelectedJob(job);
     setJobForm({
       title: job.title || "",
-      company: employerProfile?.companyName || "",
+      company_name: job.company_name || "",
       location: job.location || "",
-      jobType: job.jobType || "full-time",
+      job_type: job.job_type || "full_time",
       description: job.description || "",
       requirements: job.requirements || "",
-      salaryMin: job.salaryMin || "",
-      salaryMax: job.salaryMax || "",
-      contactEmail: job.contactEmail || user?.email || "",
-      applicationDeadline: job.applicationDeadline ? new Date(job.applicationDeadline).toISOString().split('T')[0] : ""
+      salary_min: job.salary_min ? String(job.salary_min) : "",
+      salary_max: job.salary_max ? String(job.salary_max) : "",
+      contact_email: job.contact_email || user?.email || "",
+      application_deadline: job.application_deadline ? new Date(job.application_deadline).toISOString().split('T')[0] : ""
     });
     setIsJobDialogOpen(true);
   };
@@ -322,15 +340,15 @@ export default function ProfilePage() {
     setSelectedJob(null);
     setJobForm({
       title: "",
-      company: employerProfile?.companyName || "",
-      location: employerProfile?.location || "",
-      jobType: "full-time",
+      company_name: employerProfile?.company_name || "",
+      location: employerProfile?.city || "",
+      job_type: "full_time",
       description: "",
       requirements: "",
-      salaryMin: "",
-      salaryMax: "",
-      contactEmail: user?.email || "",
-      applicationDeadline: ""
+      salary_min: "",
+      salary_max: "",
+      contact_email: user?.email || "",
+      application_deadline: ""
     });
     setIsJobDialogOpen(true);
   };
@@ -343,20 +361,19 @@ export default function ProfilePage() {
   
   const handleSubmitJob = (e: React.FormEvent) => {
     e.preventDefault();
-    
     const jobData = {
       title: jobForm.title,
       description: jobForm.description,
       requirements: jobForm.requirements,
-      job_type: jobForm.jobType,
+      company_name: jobForm.company_name,
+      job_type: jobForm.job_type,
       experience_level: "entry", // Default value, should be selectable in form
-      category_id: 1, // Default value, should be selectable in form
-      min_salary: jobForm.salaryMin ? parseFloat(jobForm.salaryMin) : null,
-      max_salary: jobForm.salaryMax ? parseFloat(jobForm.salaryMax) : null,
-      city: jobForm.location,
-      application_deadline: jobForm.applicationDeadline ? new Date(jobForm.applicationDeadline).toISOString() : null
+      salary_min: jobForm.salary_min ? parseFloat(jobForm.salary_min) : undefined,
+      salary_max: jobForm.salary_max ? parseFloat(jobForm.salary_max) : undefined,
+      location: jobForm.location,
+      contact_email: jobForm.contact_email,
+      application_deadline: jobForm.application_deadline ? new Date(jobForm.application_deadline).toISOString() : undefined
     };
-    
     if (selectedJob) {
       updateJobMutation.mutate({ 
         id: selectedJob.id, 
@@ -366,6 +383,218 @@ export default function ProfilePage() {
       addJobMutation.mutate(jobData);
     }
   };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCV, setUploadingCV] = useState(false);
+
+  // State for storing parsed CV data
+  const [parsedCVData, setParsedCVData] = useState<{
+    work_experience: any[];
+    education: any[];
+    languages: any[];
+    certifications: any[];
+  }>({
+    work_experience: [],
+    education: [],
+    languages: [],
+    certifications: [],
+  });
+
+  // Populate form when profile data is loaded
+  useEffect(() => {
+    if (jobSeekerProfile?.profile) {
+      const profile = jobSeekerProfile.profile;
+      setJobSeekerForm({
+        username: profile.username || "",
+        bio: profile.bio || "",
+        skills: Array.isArray(profile.skills) ? profile.skills.join(", ") : profile.skills || "",
+        experience_years: profile.experience_years?.toString() || "",
+        education_level: profile.education_level || "",
+        country: profile.country || "",
+        state: profile.state || "",
+        city: profile.city || "",
+        phone: profile.phone || "",
+        resume_url: profile.resume_url || "",
+      });
+    }
+  }, [jobSeekerProfile]);
+
+  // Function to automatically fill profile from parsed CV data
+  const fillProfileFromCV = (parsedData: any) => {
+    const mappedData = {
+      username: parsedData.username || parsedData.name || jobSeekerForm.username,
+      bio: parsedData.headline || parsedData.summary || parsedData.bio || jobSeekerForm.bio,
+      skills: parsedData.skills || jobSeekerForm.skills,
+      experience_years: parsedData.experience_years || jobSeekerForm.experience_years,
+      education_level: parsedData.education_level || jobSeekerForm.education_level,
+      phone: parsedData.phone || parsedData.contact || jobSeekerForm.phone,
+      country: parsedData.country || parsedData.location?.country || jobSeekerForm.country,
+      state: parsedData.state || parsedData.location?.state || jobSeekerForm.state,
+      city: parsedData.city || parsedData.location?.city || jobSeekerForm.city,
+      resume_url: jobSeekerForm.resume_url,
+    };
+
+    setJobSeekerForm((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+
+    // Store structured data for display
+    setParsedCVData({
+      work_experience: parsedData.work_experience || [],
+      education: parsedData.education || [],
+      languages: parsedData.languages || [],
+      certifications: parsedData.certifications || [],
+    });
+
+    toast({
+      title: "Profile Auto-Filled!",
+      description: "Your profile has been automatically populated with CV data. Please review and save.",
+    });
+  };
+
+  // Handle CV upload and parsing
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingCV(true);
+    const formData = new FormData();
+    formData.append("cv", file);
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch("http://localhost:5000/api/users/profile/parse-cv", {
+        method: "POST",
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.extracted) {
+        // Automatically fill profile with parsed data
+        fillProfileFromCV(data.extracted);
+        
+        toast({
+          title: "CV Parsed Successfully!",
+          description: `Extracted ${Object.keys(data.extracted).length} fields from your CV. Your profile has been automatically populated.`,
+        });
+      } else {
+        toast({
+          title: "Parsing Failed",
+          description: data.error || "Could not extract information from the CV. Please try again or manually enter your information.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Upload Failed",
+        description: (err as Error).message || "Could not upload or parse the CV. Please check your internet connection and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingCV(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const updateCVInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingUpdateCV, setUploadingUpdateCV] = useState(false);
+
+  const handleUpdateCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingUpdateCV(true);
+    const formData = new FormData();
+    formData.append("cv", file);
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch("http://localhost:5000/api/users/profile/parse-cv", {
+        method: "POST",
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      const data = await response.json();
+      if (data.extracted) {
+        setJobSeekerForm((prev) => ({
+          ...prev,
+          ...data.extracted,
+        }));
+        toast({
+          title: "CV Parsed!",
+          description: "Key information was extracted and filled in the form. Please review and confirm.",
+        });
+      } else {
+        toast({
+          title: "Parsing failed",
+          description: data.error || "Could not extract information from the CV.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Upload failed",
+        description: (err as Error).message || "Could not upload or parse the CV.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingUpdateCV(false);
+      if (updateCVInputRef.current) updateCVInputRef.current.value = "";
+    }
+  };
+
+  const resumeInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [uploadedResumeUrl, setUploadedResumeUrl] = useState<string | null>(null);
+  const [viewingFile, setViewingFile] = useState(false);
+  const [downloadingFile, setDownloadingFile] = useState(false);
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingResume(true);
+    const formData = new FormData();
+    formData.append("resume", file); // KEY MUST BE 'resume'
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch("http://localhost:5000/api/users/profile/upload-resume", {
+        method: "POST",
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      const data = await response.json();
+      if (data.resume_url) {
+        setUploadedResumeUrl(data.resume_url);
+        toast({
+          title: "Resume Uploaded!",
+          description: "Your resume has been uploaded and stored.",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/users/profile"] });
+      } else {
+        toast({
+          title: "Upload failed",
+          description: data.error || "Could not upload the resume.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      toast({
+        title: "Upload failed",
+        description: (err as Error).message || "Could not upload the resume.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingResume(false);
+      if (resumeInputRef.current) resumeInputRef.current.value = "";
+    }
+  };
+
+  useEffect(() => {
+    if (jobSeekerProfile?.profile?.resume_url) {
+      setUploadedResumeUrl(null);
+    }
+  }, [jobSeekerProfile?.profile?.resume_url]);
 
   if (!user) {
     return (
@@ -382,15 +611,126 @@ export default function ProfilePage() {
   const isLoading = isLoadingJobSeekerProfile || isLoadingEmployerProfile;
 
   const getProfileInitials = () => {
-    if (isJobSeeker && jobSeekerProfile?.fullName) {
-      const names = jobSeekerProfile.fullName.split(" ");
+    if (isJobSeeker && jobSeekerProfile?.username) {
+      const names = jobSeekerProfile.username.split(" ");
       return names.length > 1
         ? `${names[0][0]}${names[names.length - 1][0]}`
         : names[0][0];
-    } else if (isEmployer && employerProfile?.companyName) {
-      return employerProfile.companyName[0];
+    } else if (isEmployer && employerProfile?.company_name) {
+      return employerProfile.company_name[0];
     } else {
       return user.email ? user.email[0].toUpperCase() : 'U';
+    }
+  };
+
+  // Add this debug print inside the ProfilePage component, after jobSeekerProfile is fetched:
+  console.log('DEBUG: jobSeekerProfile', jobSeekerProfile);
+
+  const resumeUrlToShow = uploadedResumeUrl || jobSeekerProfile?.profile?.resume_url;
+
+  // Function to extract filename from resume URL
+  const getResumeFilename = (url: string | null) => {
+    if (!url) return "My Resume.pdf";
+    const filename = url.split('/').pop();
+    return filename || "My Resume.pdf";
+  };
+
+  // Function to handle file viewing with authentication
+  const handleViewFile = async (fileUrl: string) => {
+    setViewingFile(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to view files.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create a blob URL for viewing
+      const response = await fetch(`http://localhost:5000/api/users${fileUrl}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Open in new tab
+      window.open(url, '_blank');
+      
+      // Clean up the blob URL after a delay
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+      
+    } catch (error) {
+      toast({
+        title: "Error viewing file",
+        description: "Could not load the file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setViewingFile(false);
+    }
+  };
+
+  // Function to handle file download with authentication
+  const handleDownloadFile = async (fileUrl: string) => {
+    setDownloadingFile(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to download files.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/users${fileUrl}?download=true`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = getResumeFilename(fileUrl);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download started",
+        description: "Your file download has begun.",
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Error downloading file",
+        description: "Could not download the file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingFile(false);
     }
   };
 
@@ -421,10 +761,10 @@ export default function ProfilePage() {
                   )}
                 </Avatar>
                 <h2 className="text-xl font-semibold">
-                  {isJobSeeker && jobSeekerProfile?.fullName
-                    ? jobSeekerProfile.fullName
-                    : isEmployer && employerProfile?.companyName
-                    ? employerProfile.companyName
+                  {isJobSeeker && jobSeekerProfile?.username
+                    ? jobSeekerProfile.username
+                    : isEmployer && employerProfile?.company_name
+                    ? employerProfile.company_name
                     : user.email || 'User'}
                 </h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -436,8 +776,8 @@ export default function ProfilePage() {
                     ? "Administrator"
                     : "User"}
                 </p>
-                {isJobSeeker && jobSeekerProfile?.headline && (
-                  <p className="text-sm mt-2">{jobSeekerProfile.headline}</p>
+                {isJobSeeker && jobSeekerProfile?.bio && (
+                  <p className="text-sm mt-2">{jobSeekerProfile.bio}</p>
                 )}
                 {isEmployer && employerProfile?.industry && (
                   <p className="text-sm mt-2">{employerProfile.industry}</p>
@@ -671,63 +1011,139 @@ export default function ProfilePage() {
                     <CardTitle>Profile Information</CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {/* Resume Upload, View, and Delete */}
+                    <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
+                      <div>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          ref={resumeInputRef}
+                          style={{ display: "none" }}
+                          onChange={handleResumeUpload}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => resumeInputRef.current?.click()}
+                          disabled={uploadingResume}
+                        >
+                          {uploadingResume ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="mr-2 h-4 w-4" />
+                          )}
+                          Upload Resume (Store)
+                        </Button>
+                      </div>
+                      {resumeUrlToShow && (
+                        <div className="flex items-center mt-2 p-4 border rounded-md">
+                          <FileText className="h-8 w-8 text-primary mr-4" />
+                          <div className="flex-1">
+                            <p className="font-medium">{getResumeFilename(resumeUrlToShow)}</p>
+                            <p className="text-sm text-gray-500">Uploaded on {new Date().toLocaleDateString()}</p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleViewFile(resumeUrlToShow!)}
+                            disabled={viewingFile}
+                          >
+                            {viewingFile ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            View
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="ml-2"
+                            onClick={() => handleDownloadFile(resumeUrlToShow!)}
+                            disabled={downloadingFile}
+                          >
+                            {downloadingFile ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
+                            Download
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="ml-2"
+                            onClick={async () => {
+                              const token = localStorage.getItem('access_token');
+                              const response = await fetch("http://localhost:5000/api/users/profile/delete-resume", {
+                                method: "DELETE",
+                                headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                              });
+                              if (response.ok) {
+                                setUploadedResumeUrl(null);
+                                toast({
+                                  title: "Resume Deleted!",
+                                  description: "Your resume has been deleted.",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ["/users/profile"] });
+                              } else {
+                                const data = await response.json();
+                                toast({
+                                  title: "Delete failed",
+                                  description: data.error || "Could not delete the resume.",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {/* CV Parse Upload */}
+                    <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
+                      <div>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          ref={fileInputRef}
+                          style={{ display: "none" }}
+                          onChange={handleCVUpload}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingCV}
+                        >
+                          {uploadingCV ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="mr-2 h-4 w-4" />
+                          )}
+                          Upload & Parse CV
+                        </Button>
+                      </div>
+                    </div>
                     <form onSubmit={handleJobSeekerSubmit} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="fullName">Full Name</Label>
+                          <Label htmlFor="username">Full Name</Label>
                           <Input
-                            id="fullName"
-                            name="fullName"
-                            value={jobSeekerForm.fullName}
+                            id="username"
+                            name="username"
+                            value={jobSeekerForm.username}
                             onChange={handleJobSeekerChange}
                           />
                         </div>
                         <div>
-                          <Label htmlFor="headline">Professional Headline</Label>
+                          <Label htmlFor="bio">Professional Headline</Label>
                           <Input
-                            id="headline"
-                            name="headline"
-                            value={jobSeekerForm.headline}
+                            id="bio"
+                            name="bio"
+                            value={jobSeekerForm.bio}
                             onChange={handleJobSeekerChange}
                             placeholder="e.g. Senior Software Engineer"
                           />
                         </div>
                       </div>
-
-                      <div>
-                        <Label htmlFor="bio">Professional Summary</Label>
-                        <Textarea
-                          id="bio"
-                          name="bio"
-                          value={jobSeekerForm.bio}
-                          onChange={handleJobSeekerChange}
-                          rows={4}
-                          placeholder="Brief overview of your professional background and career goals"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="location">Location</Label>
-                          <Input
-                            id="location"
-                            name="location"
-                            value={jobSeekerForm.location}
-                            onChange={handleJobSeekerChange}
-                            placeholder="e.g. New York, NY"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            id="phone"
-                            name="phone"
-                            value={jobSeekerForm.phone}
-                            onChange={handleJobSeekerChange}
-                          />
-                        </div>
-                      </div>
-
                       <div>
                         <Label htmlFor="skills">Skills (comma separated)</Label>
                         <Input
@@ -738,43 +1154,77 @@ export default function ProfilePage() {
                           placeholder="e.g. JavaScript, React, Node.js"
                         />
                       </div>
-
-                      <div>
-                        <Label htmlFor="experience">Work Experience</Label>
-                        <Textarea
-                          id="experience"
-                          name="experience"
-                          value={jobSeekerForm.experience}
-                          onChange={handleJobSeekerChange}
-                          rows={4}
-                          placeholder="Summarize your work history"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="experience_years">Years of Experience</Label>
+                          <Input
+                            id="experience_years"
+                            name="experience_years"
+                            value={jobSeekerForm.experience_years}
+                            onChange={handleJobSeekerChange}
+                            placeholder="e.g. 3"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="education_level">Education Level</Label>
+                          <Input
+                            id="education_level"
+                            name="education_level"
+                            value={jobSeekerForm.education_level}
+                            onChange={handleJobSeekerChange}
+                            placeholder="e.g. Bachelor's, Master's"
+                          />
+                        </div>
                       </div>
-
-                      <div>
-                        <Label htmlFor="education">Education</Label>
-                        <Textarea
-                          id="education"
-                          name="education"
-                          value={jobSeekerForm.education}
-                          onChange={handleJobSeekerChange}
-                          rows={3}
-                          placeholder="List your education background"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="country">Country</Label>
+                          <Input
+                            id="country"
+                            name="country"
+                            value={jobSeekerForm.country}
+                            onChange={handleJobSeekerChange}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="state">State</Label>
+                          <Input
+                            id="state"
+                            name="state"
+                            value={jobSeekerForm.state}
+                            onChange={handleJobSeekerChange}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="city">City</Label>
+                          <Input
+                            id="city"
+                            name="city"
+                            value={jobSeekerForm.city}
+                            onChange={handleJobSeekerChange}
+                          />
+                        </div>
                       </div>
-
                       <div>
-                        <Label htmlFor="resumeUrl">Resume URL</Label>
+                        <Label htmlFor="phone">Phone Number</Label>
                         <Input
-                          id="resumeUrl"
-                          name="resumeUrl"
+                          id="phone"
+                          name="phone"
+                          value={jobSeekerForm.phone}
+                          onChange={handleJobSeekerChange}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="resume_url">Resume URL</Label>
+                        <Input
+                          id="resume_url"
+                          name="resume_url"
                           type="url"
-                          value={jobSeekerForm.resumeUrl}
+                          value={jobSeekerForm.resume_url}
                           onChange={handleJobSeekerChange}
                           placeholder="Link to your resume"
                         />
                       </div>
-
                       <Button 
                         type="submit"
                         disabled={updateJobSeekerMutation.isPending}
@@ -787,6 +1237,92 @@ export default function ProfilePage() {
                         Save Profile
                       </Button>
                     </form>
+
+                    {/* Display Parsed CV Data */}
+                    {(parsedCVData.work_experience.length > 0 || 
+                      parsedCVData.education.length > 0 || 
+                      parsedCVData.languages.length > 0 || 
+                      parsedCVData.certifications.length > 0) && (
+                      <div className="mt-8 space-y-6">
+                        <div className="border-t pt-6">
+                          <h3 className="text-lg font-semibold mb-4">Parsed CV Information</h3>
+                          <p className="text-sm text-gray-600 mb-4">
+                            The following information was extracted from your CV. You can edit it above before saving.
+                          </p>
+                        </div>
+
+                        {/* Work Experience */}
+                        {parsedCVData.work_experience.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2 flex items-center">
+                              <Briefcase className="h-4 w-4 mr-2" />
+                              Work Experience
+                            </h4>
+                            <div className="space-y-3">
+                              {parsedCVData.work_experience.map((exp, index) => (
+                                <div key={index} className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                                  <div className="font-medium">{exp.title || exp.description}</div>
+                                  {exp.company && <div className="text-sm text-gray-600">{exp.company}</div>}
+                                  {exp.duration && <div className="text-sm text-gray-500">{exp.duration}</div>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Education */}
+                        {parsedCVData.education.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2 flex items-center">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              Education
+                            </h4>
+                            <div className="space-y-3">
+                              {parsedCVData.education.map((edu, index) => (
+                                <div key={index} className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                                  <div className="font-medium">{edu.degree || edu.description}</div>
+                                  {edu.institution && <div className="text-sm text-gray-600">{edu.institution}</div>}
+                                  {edu.year && <div className="text-sm text-gray-500">{edu.year}</div>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Languages */}
+                        {parsedCVData.languages.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2">Languages</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {parsedCVData.languages.map((lang, index) => (
+                                <Badge key={index} variant="secondary">
+                                  {lang.language} {lang.proficiency && `(${lang.proficiency})`}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Certifications */}
+                        {parsedCVData.certifications.length > 0 && (
+                          <div>
+                            <h4 className="font-medium mb-2 flex items-center">
+                              <Star className="h-4 w-4 mr-2" />
+                              Certifications
+                            </h4>
+                            <div className="space-y-3">
+                              {parsedCVData.certifications.map((cert, index) => (
+                                <div key={index} className="p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
+                                  <div className="font-medium">{cert.name || cert.description}</div>
+                                  {cert.issuer && <div className="text-sm text-gray-600">{cert.issuer}</div>}
+                                  {cert.year && <div className="text-sm text-gray-500">{cert.year}</div>}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
@@ -906,11 +1442,11 @@ export default function ProfilePage() {
                     <form onSubmit={handleEmployerSubmit} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="companyName">Company Name</Label>
+                          <Label htmlFor="company_name">Company Name</Label>
                           <Input
-                            id="companyName"
-                            name="companyName"
-                            value={employerForm.companyName}
+                            id="company_name"
+                            name="company_name"
+                            value={employerForm.company_name}
                             onChange={handleEmployerChange}
                             required
                           />
@@ -930,11 +1466,11 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="companySize">Company Size</Label>
+                          <Label htmlFor="company_size">Company Size</Label>
                           <Input
-                            id="companySize"
-                            name="companySize"
-                            value={employerForm.companySize}
+                            id="company_size"
+                            name="company_size"
+                            value={employerForm.company_size}
                             onChange={handleEmployerChange}
                             placeholder="e.g. 1-10, 11-50, 51-200, 201-500, 500+"
                           />
@@ -952,11 +1488,11 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="description">Company Description</Label>
+                        <Label htmlFor="company_description">Company Description</Label>
                         <Textarea
-                          id="description"
-                          name="description"
-                          value={employerForm.description}
+                          id="company_description"
+                          name="company_description"
+                          value={employerForm.company_description}
                           onChange={handleEmployerChange}
                           rows={4}
                           placeholder="Describe your company, mission, and culture"
@@ -965,25 +1501,23 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="website">Website</Label>
+                          <Label htmlFor="company_website">Website</Label>
                           <Input
-                            id="website"
-                            name="website"
+                            id="company_website"
+                            name="company_website"
                             type="url"
-                            value={employerForm.website}
+                            value={employerForm.company_website}
                             onChange={handleEmployerChange}
                             placeholder="https://your-company.com"
                           />
                         </div>
                         <div>
-                          <Label htmlFor="logoUrl">Logo URL</Label>
+                          <Label htmlFor="phone">Phone Number</Label>
                           <Input
-                            id="logoUrl"
-                            name="logoUrl"
-                            type="url"
-                            value={employerForm.logoUrl}
+                            id="phone"
+                            name="phone"
+                            value={employerForm.phone}
                             onChange={handleEmployerChange}
-                            placeholder="Link to your company logo"
                           />
                         </div>
                       </div>
@@ -1074,23 +1608,61 @@ export default function ProfilePage() {
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="resumeUpload">Upload Resume (PDF)</Label>
-                        <Input id="resumeUpload" type="file" accept=".pdf" />
+                        <input
+                          id="resumeUpload"
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          ref={updateCVInputRef}
+                          style={{ display: "none" }}
+                          onChange={handleUpdateCVUpload}
+                        />
+                        <Button
+                          className="mt-2"
+                          type="button"
+                          variant="outline"
+                          onClick={() => updateCVInputRef.current?.click()}
+                          disabled={uploadingUpdateCV}
+                        >
+                          {uploadingUpdateCV ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="mr-2 h-4 w-4" />
+                          )}
+                          Upload & Parse CV
+                        </Button>
                       </div>
                       
                       <div>
                         <Label>Current Resume</Label>
-                        {jobSeekerProfile?.resumeUrl ? (
+                        {resumeUrlToShow ? (
                           <div className="flex items-center mt-2 p-4 border rounded-md">
                             <FileText className="h-8 w-8 text-primary mr-4" />
                             <div className="flex-1">
-                              <p className="font-medium">My Resume.pdf</p>
+                              <p className="font-medium">{getResumeFilename(resumeUrlToShow)}</p>
                               <p className="text-sm text-gray-500">Uploaded on {new Date().toLocaleDateString()}</p>
                             </div>
-                            <Button variant="outline" size="sm" asChild>
-                              <a href={jobSeekerProfile.resumeUrl} target="_blank" rel="noopener noreferrer">
-                                View
-                              </a>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleViewFile(resumeUrlToShow!)}
+                              disabled={viewingFile}
+                            >
+                              {viewingFile ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : null}
+                              View
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="ml-2"
+                              onClick={() => handleDownloadFile(resumeUrlToShow!)}
+                              disabled={downloadingFile}
+                            >
+                              {downloadingFile ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : null}
+                              Download
                             </Button>
                           </div>
                         ) : (
@@ -1099,11 +1671,30 @@ export default function ProfilePage() {
                           </div>
                         )}
                       </div>
-                      
-                      <Button className="mt-2">
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Resume
-                      </Button>
+                      <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
+                        <div>
+                          <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            ref={resumeInputRef}
+                            style={{ display: "none" }}
+                            onChange={handleResumeUpload}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => resumeInputRef.current?.click()}
+                            disabled={uploadingResume}
+                          >
+                            {uploadingResume ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                              <Upload className="mr-2 h-4 w-4" />
+                            )}
+                            Upload Resume (Store)
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -1221,12 +1812,12 @@ export default function ProfilePage() {
                                     <span>{job.location || "Remote"}</span>
                                     <span className="mx-2">•</span>
                                     <Clock className="h-4 w-4 mr-1" />
-                                    <span className="capitalize">{job.jobType}</span>
-                                    {job.salaryMin && job.salaryMax && (
+                                    <span className="capitalize">{job.job_type}</span>
+                                    {job.salary_min && job.salary_max && (
                                       <>
                                         <span className="mx-2">•</span>
                                         <DollarSign className="h-4 w-4 mr-1" />
-                                        <span>${job.salaryMin} - ${job.salaryMax}</span>
+                                        <span>${job.salary_min} - ${job.salary_max}</span>
                                       </>
                                     )}
                                   </div>
@@ -1263,10 +1854,10 @@ export default function ProfilePage() {
                                   Posted: {format(new Date(job.createdAt), 'MMM d, yyyy')}
                                 </Badge>
                                 
-                                {job.applicationDeadline && (
+                                {job.application_deadline && (
                                   <Badge variant="outline" className="bg-primary/10">
                                     <Calendar className="h-3.5 w-3.5 mr-1" />
-                                    Deadline: {format(new Date(job.applicationDeadline), 'MMM d, yyyy')}
+                                    Deadline: {format(new Date(job.application_deadline), 'MMM d, yyyy')}
                                   </Badge>
                                 )}
                               </div>
@@ -1334,17 +1925,17 @@ export default function ProfilePage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="jobType">Job Type *</Label>
+                            <Label htmlFor="job_type">Job Type *</Label>
                             <Select 
-                              defaultValue={jobForm.jobType}
+                              defaultValue={jobForm.job_type}
                               onValueChange={handleJobTypeChange}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select job type" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="full-time">Full-time</SelectItem>
-                                <SelectItem value="part-time">Part-time</SelectItem>
+                                <SelectItem value="full_time">Full-time</SelectItem>
+                                <SelectItem value="part_time">Part-time</SelectItem>
                                 <SelectItem value="contract">Contract</SelectItem>
                                 <SelectItem value="internship">Internship</SelectItem>
                                 <SelectItem value="freelance">Freelance</SelectItem>
@@ -1380,25 +1971,25 @@ export default function ProfilePage() {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="salaryMin">Salary Range (Min)</Label>
+                            <Label htmlFor="salary_min">Salary Range (Min)</Label>
                             <Input
-                              id="salaryMin"
-                              name="salaryMin"
+                              id="salary_min"
+                              name="salary_min"
                               type="text"
                               inputMode="numeric"
-                              value={jobForm.salaryMin}
+                              value={jobForm.salary_min}
                               onChange={handleJobFormChange}
                               placeholder="e.g. 50000"
                             />
                           </div>
                           <div>
-                            <Label htmlFor="salaryMax">Salary Range (Max)</Label>
+                            <Label htmlFor="salary_max">Salary Range (Max)</Label>
                             <Input
-                              id="salaryMax"
-                              name="salaryMax"
+                              id="salary_max"
+                              name="salary_max"
                               type="text"
                               inputMode="numeric"
-                              value={jobForm.salaryMax}
+                              value={jobForm.salary_max}
                               onChange={handleJobFormChange}
                               placeholder="e.g. 80000"
                             />
@@ -1407,24 +1998,24 @@ export default function ProfilePage() {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="contactEmail">Contact Email *</Label>
+                            <Label htmlFor="contact_email">Contact Email *</Label>
                             <Input
-                              id="contactEmail"
-                              name="contactEmail"
+                              id="contact_email"
+                              name="contact_email"
                               type="email"
-                              value={jobForm.contactEmail}
+                              value={jobForm.contact_email}
                               onChange={handleJobFormChange}
                               placeholder="e.g. careers@company.com"
                               required
                             />
                           </div>
                           <div>
-                            <Label htmlFor="applicationDeadline">Application Deadline</Label>
+                            <Label htmlFor="application_deadline">Application Deadline</Label>
                             <Input
-                              id="applicationDeadline"
-                              name="applicationDeadline"
+                              id="application_deadline"
+                              name="application_deadline"
                               type="date"
-                              value={jobForm.applicationDeadline}
+                              value={jobForm.application_deadline}
                               onChange={handleJobFormChange}
                             />
                           </div>

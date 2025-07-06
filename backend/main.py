@@ -1,3 +1,5 @@
+import sys
+print("Python executable:", sys.executable)
 from flask import Flask
 from flask_cors import CORS
 import os
